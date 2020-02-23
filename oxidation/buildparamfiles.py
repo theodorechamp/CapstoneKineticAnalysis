@@ -16,7 +16,9 @@ def main():
         'k3':10**-1,
         'n3':1.5,
         'Vco':10,
-        'Ftot':5 }
+        'Ftot':5,
+        'conversion':.5,
+        'tspan':10 }
     jsonoutput(params,"testparams.json")
 
 
