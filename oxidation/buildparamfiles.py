@@ -18,7 +18,8 @@ def main():
         'Vco':10,
         'Ftot':5,
         'conversion':.5,
-        'tspan':10 }
+        'tspan':10
+        'tstep':.1 }
     jsonoutput(params,"testparams.json")
 
 
