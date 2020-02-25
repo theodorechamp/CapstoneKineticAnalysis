@@ -4,14 +4,14 @@ import os
 
 def jsonoutput(params, fn):
     savelocation = os.getcwd() + "/paramfiles/" + fn
-    with open(savelocation,"w") as f_obj:
+    with open(savelocation,"a") as f_obj:
         json.dump(params, f_obj)
 
 
 def main():
     params = {
         'k1':10**-1.55,
-        'gamma1':2.5,
+        'gamma1':2,
         'n1':2.0,
         'k3':10**-1,
         'n3':1.5,
