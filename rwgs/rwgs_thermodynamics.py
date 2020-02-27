@@ -1,5 +1,6 @@
 from numpy import *
 from scipy.optimize import *
+import random
 #from sympy.core.symbol import symbols
 #from sympy.solvers.solveset import nonlinsolve
 
@@ -27,22 +28,37 @@ def GasEq(zeta):
     z1 = zeta[0]
     z2 = zeta[1]
     z3 = zeta[2]
+    print(zeta)
 
-    #Mole fractions;
-    yH2  = n0['H2']  - z1 - 3*z2 - 4*z3
-    yCO2 = n0['CO2'] - z1 - z3
-    yCO  = n0['CO']  + z1 - z2
-    yH2O = n0['H2O'] + z1 + z2 + 2*z3
-    yCH4 = n0['CH4'] + z2 + z3
+    #Moles
+    n = {}
+    n['H2']  = n0['H2']  - z1 - 3*z2 - 4*z3
+    n['CO2'] = n0['CO2'] - z1 - z3
+    n['CO']  = n0['CO']  + z1 - z2
+    n['H2O'] = n0['H2O'] + z1 + z2 + 2*z3
+    n['CH4'] = n0['CH4'] + z2 + z3
+
+    ntot = 0
+    for key in n:
+        ntot = ntot + n[key]
+    y = {}
+    for key in n:
+        y[key] = n[key] / ntot
+
+
+    #for key in y:
+    #    if y[key] < 0:
+    #        y[key] = 0;
 
     #system of equations
-    E = zeros(3)
-    E[0] = yCO*yH2O/yCO2/yH2 - K1
-    E[1] = 1/(P**2)*yCH4*yH2O/yCO/(yH2**3) - K2
-    E[2] = 1/(P**2)*yCH4*(yH2O**2)/yCO2/(yH2**4) - K3
+    print(y)
+    E = [0]*3
+    E[0] = y['CO']*y['H2O']/y['CO2']/y['H2'] - K1
+    E[1] = 1/(P**2)*y['CH4']*y['H2O']/y['CO']/(y['H2']**3) - K2
+    E[2] = 1/(P**2)*y['CH4']*(y['H2O']**2)/y['CO2']/(y['H2']**4) - K3
     return E
 
-zetaGuess = array([0.3, 0.1, 0.1])
+zetaGuess = array([random.uniform(.1,.2), random.uniform(0,.1), random.uniform(0,.3)])
 
-zeta = fsolve(GasEq, zetaGuess)
+zeta = root(GasEq, zetaGuess, tol=0.1)
 print(zeta)
