@@ -6,17 +6,18 @@ class jsonComm(object):
     """docstring for jsonComm."""
     def __init__(self):
         super(jsonComm, self).__init__()
+        self.fn = "params.json"
         try:
-            open("params.txt",'x')
-            self.f = open("params.txt", 'r+')
+            open(self.fn,'x')
+            self.f = open(self.fn, 'r+')
             data = {"lastUID":0, "iterations":[]}
             json.dump(data, self.f, indent=2)
         except FileExistsError:
-            self.f = open("params.txt", 'r')
+            self.f = open(self.fn, 'r')
             data = json.load(self.f)
         self.fs = data
         print(data)
-        self.f = open("params.txt", 'w')
+        self.f = open(self.fn, 'w')
 
 
     def jsonoutput(self,params):
