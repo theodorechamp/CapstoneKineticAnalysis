@@ -4,5 +4,5 @@ import json
 
 
 
-def execODE(paramfn):
-    print("World")
+def execODE(params):
+    print(params)
