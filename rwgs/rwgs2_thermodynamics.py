@@ -31,7 +31,7 @@ for temp in T:
     K2.append(exp(-G2/R/temp))
     K3.append(exp(-G3/R/temp))
     #Each K value corisponds with the T value at its array location
-    
+
 # K1 = exp(-G1/R/T)
 # K2 = exp(-G2/R/T)
 # K3 = exp(-G3/R/T)
@@ -44,33 +44,48 @@ def GasEq(zeta, K1, K2, K3):
     z3 = zeta[2]
     print(zeta)
 
-    #Moles
-    n = {}
-    n['H2']  = n0['H2']  - z1 - 3*z2 - 4*z3
-    n['CO2'] = n0['CO2'] - z1 - z3
-    n['CO']  = n0['CO']  + z1 - z2
-    n['H2O'] = n0['H2O'] + z1 + z2 + 2*z3
-    n['CH4'] = n0['CH4'] + z2 + z3
-
-    ntot = 0
-    for key in n:
-        ntot = ntot + n[key]
-    y = {}
-    for key in n:
-        y[key] = n[key] / ntot
-
-
-    #for key in y:
-    #    if y[key] < 0:
-    #        y[key] = 0;
+    #ntot = ((n0['H2']  - z1 - 3*z2 - 4*z3) + (n0['CO2'] - z1 - z3) + (n0['CO']  + z1 - z2) + (n['H2O'] = n0['H2O'] + z1 + z2 + 2*z3) + (n0['CH4'] + z2 + z3))
 
     #system of equations, equilibrium constants in terms of partial pressures
     print(y)
     E = [0]*3
-    E[0] = y['CO']*y['H2O']/y['CO2']/y['H2'] - K1
-    E[1] = (1/(P**2))*y['CH4']*y['H2O']/y['CO']/(y['H2']**3) - K2
-    E[2] = ((1/(P**2))*y['CH4']*(y['H2O']**2)/y['CO2'])/(y['H2']**4) - K3
+    #E[0] = rwgs.
+    E[0] = n0['CO']  + z1 - z2
+    E[0] = E[0]*(n0['H2O'] + z1 + z2 + 2*z3)
+    E[0] = E[0]/(n0['CO2'] - z1 - z3)
+    E[0] = E[0]/(n0['H2']  - z1 - 3*z2 - 4*z3)
+    E[0] = E[0] - K1
+    #E[1] = methanation
+    E[1] = (1/(P**2)*((n0['H2']  - z1 - 3*z2 - 4*z3) + (n0['CO2'] - z1 - z3) + (n0['CO']  + z1 - z2) + (n0['H2O'] + z1 + z2 + 2*z3) + (n0['CH4'] + z2 + z3))**2)
+    E[1] = E[1]*(n0['CH4'] + z2 + z3)
+    E[1] = E[1]*(n0['H2O'] + z1 + z2 + 2*z3)
+    E[1] = E[1]/(n0['CO']  + z1 - z2)
+    E[1] = E[1]/((n0['H2']  - z1 - 3*z2 - 4*z3)**3)
+    E[1] = E[1] - K2
+    #E[2] = Sabatier reaction
+    E[2] = (1/(P**2)*((n0['H2']  - z1 - 3*z2 - 4*z3) + (n0['CO2'] - z1 - z3) + (n0['CO']  + z1 - z2) + (n0['H2O'] + z1 + z2 + 2*z3) + (n0['CH4'] + z2 + z3))**2)
+    E[2] = E[2]*(n0['CH4'] + z2 + z3)
+    E[2] = E[2]*((n0['H2O'] + z1 + z2 + 2*z3)**2)
+    E[2] = E[2]/(n0['CO2'] - z1 - z3)
+    E[2] = E[2]/((n0['H2']  - z1 - 3*z2 - 4*z3)**4)
+    E[2] = E[2] - K3
     return E
+
+#number of oles of each species
+n = {}
+n['H2']  = n0['H2']  - z1 - 3*z2 - 4*z3
+n['CO2'] = n0['CO2'] - z1 - z3
+n['CO']  = n0['CO']  + z1 - z2
+n['H2O'] = n0['H2O'] + z1 + z2 + 2*z3
+n['CH4'] = n0['CH4'] + z2 + z3
+
+#calculating total number of moles, and mole fractions of each component.
+ntot = 0
+for key in n:
+    ntot = ntot + n[key]
+y = {}
+for key in n:
+    y[key] = n[key] / ntot
 
 storage = [] #How to call a val storage[0 - 700][0] = E[0] at that 0-700 calc
 for X in range(0, 700, 1):
