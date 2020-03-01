@@ -4,7 +4,7 @@ import random
 #from sympy.core.symbol import symbols
 #from sympy.solvers.solveset import nonlinsolve
 
-R = 8.3145 #J/mol/K
+R = 8.3145*10**(-3) #J/kmol/K
 T = 600 + 273.15 #K
 P = 1.01325*10**5 #J/m^3
 n0 = {'CO2': 1, 'H2': 3, 'CO': 0, 'H2O': 0, 'CH4': 0} #kmol
@@ -18,7 +18,7 @@ G2 = Gf['CH4'] + Gf['H2O'] - Gf['CO'] - 3*Gf['H2']
 #rxn3: the Sabatier rxn
 G3 = Gf['CH4'] + 2*Gf['H2O'] - Gf['CO2'] - 4*Gf['H2']
 
-#Calculating equilibrium constants K1, K2, and K3
+#Calculating equilibrium constants K1, K2, and K3, @ T
 K1 = exp(-G1/R/T)
 K2 = exp(-G2/R/T)
 K3 = exp(-G3/R/T)
@@ -57,16 +57,17 @@ def GasEq(zeta):
     return E
 
 zetaGuess = array([random.uniform(.1,.5), random.uniform(0,.1), random.uniform(0,.2)])
+#zetaGuess = [0.2352, 0.0898,0.0895]
 
-zeta = fsolve(GasEq, zetaGuess)
+zeta = root(GasEq, zetaGuess, tol=1e-02, options= {'maxfev': 500})
+print(type(zeta))
 print('This is the final zeta:' + str(zeta))
 
-n = {}
-n['H2']  = n0['H2']  - zeta[0] - 3*zeta[1] - 4*zeta[2]
-n['CO2'] = n0['CO2'] - zeta[0] - zeta[2]
-n['CO']  = n0['CO']  + zeta[0] - zeta[1]
-n['H2O'] = n0['H2O'] + zeta[0] + zeta[1] + 2*zeta[2]
-n['CH4'] = n0['CH4'] + zeta[1] + zeta[2]
+n = {'H2':  n0['H2']  - zeta[0] - 3*zeta[1] - 4*zeta[2],
+'CO2': n0['CO2'] - zeta[0] - zeta[2],
+'CO':  n0['CO']  + zeta[0] - zeta[1],
+'H2O': n0['H2O'] + zeta[0] + zeta[1] + 2*zeta[2],
+'CH4': n0['CH4'] + zeta[1] + zeta[2]}
 print('This is the final n:' + str(n))
 
 #calculating total number of moles, and mole fractions of each component.
@@ -77,7 +78,6 @@ y = {}
 for key in n:
     y[key] = n[key] / ntot
 print('This is the final y:' + str(y))
-
 
 #plt.plot(x=T, y['CO2'], color = "yellow")
 #plt.plot(x=T, y['H2'], color = "green")
