@@ -3,6 +3,7 @@ import numpy
 import sys
 import os
 import random
+import itertools
 class jsonComm(object):
     """docstring for jsonComm."""
     def __init__(self):
@@ -27,6 +28,16 @@ class jsonComm(object):
         json.dump(self.fs,self.f,indent=2)
 
     def jsonoutputgrid(self,params):
+        ## Build grid layout
+        ranges = []
+        i=0
+        for item in params:
+            key = params[item]
+            ranges[i] = numpy.linspace(key[1],key[2],2) #linspace num (3rd arg) can be increased.
+            i=i+1
+        list(itertools.product(*ranges))
+        #https://stackoverflow.com/questions/798854/all-combinations-of-a-list-of-lists
+        ## Write grid layout to file  
         UID = self.fs["lastUID"]+1
         self.fs["lastUID"] = UID
         data = {"UID":UID,"params":params}
