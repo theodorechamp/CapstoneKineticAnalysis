@@ -4,6 +4,7 @@ import sys
 import os
 import random
 import itertools
+
 class jsonComm(object):
     """docstring for jsonComm."""
     def __init__(self):
@@ -27,23 +28,30 @@ class jsonComm(object):
         self.fs["iterations"].insert(0,data)
         json.dump(self.fs,self.f,indent=2)
 
+    def jsondump(self):
+        json.dump(self.fs,self.f,indent=2)
+
     def jsonoutputgrid(self,params):
         ## Build grid layout
         ranges = []
         i=0
         for item in params:
             key = params[item]
-            ranges[i] = numpy.linspace(key[1],key[2],2) #linspace num (3rd arg) can be increased.
+            ranges.append(numpy.linspace(key[1],key[2],2)) #linspace num (3rd arg) can be increased.
             i=i+1
-        list(itertools.product(*ranges))
-        #https://stackoverflow.com/questions/798854/all-combinations-of-a-list-of-lists
-        ## Write grid layout to file  
-        UID = self.fs["lastUID"]+1
-        self.fs["lastUID"] = UID
-        data = {"UID":UID,"params":params}
-        self.fs["iterations"].insert(0,data)
-    def jsondump(self):
-        json.dump(self.fs,self.f,indent=2)
+        print(ranges)
+        params = list(itertools.product(*ranges)) #https://stackoverflow.com/questions/798854/all-combinations-of-a-list-of-lists
+        print(list(params))
+        print(len(params))
+        ## Write grid layout to file
+        i=0
+        for l in params:
+            UID = self.fs["lastUID"]+1
+            self.fs["lastUID"] = UID
+            data = {"UID":UID,"params":l}
+            self.fs["iterations"].insert(0,data)
+            i=i+1
+        self.jsondump()
 
 def randparams(params):
     for item in params:
@@ -59,8 +67,6 @@ def randparamsgrid(params, j):
             key[0] = val
             j.jsonoutputgrid(params)
     j.jsondump()
-
-
     return (params)
 
 def main():
@@ -82,7 +88,7 @@ def main():
     try:
         input = sys.argv[1]
         if(input=='-i' or input=='--init'):
-            params = randparamsgrid(params,j)
+            params = j.jsonoutputgrid(params)
     except IndexError:
         params = randparams(params)
         j.jsonoutput(params)
