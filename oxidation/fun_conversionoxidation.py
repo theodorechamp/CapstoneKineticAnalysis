@@ -2,7 +2,7 @@
 
 def conversion(t, y0, p):
     numvariables = 4
-    y = {'conv':0, 'nvac':0, 'nh2':0, 'nco': 0}
+    y = {'conv':0, 'nvac':, 'nh2':0, 'nco': 0}
     dadt = p.conversion / p.tspan * p.tstep #maybe change later
     Yco = (p.n * p.tau / p.Vr * dadt) #change to reactor
     y['conv'] = p.k1 * Yco**p.gamma1 * (1-y0['conv'])**p.n1 +\
