@@ -8,66 +8,72 @@ import itertools
 class jsonComm(object):
     """docstring for jsonComm."""
     def __init__(self):
+        ## params.json validation and json skeleton construction
         super(jsonComm, self).__init__()
         self.fn = "params.json"
-        try:
+        try: #check if file exists to read in pre-existing data, if not, create new file with json skeleton.
             open(self.fn,'x')
             self.f = open(self.fn, 'r+')
             data = {"lastUID":0, "iterations":[]}
-            json.dump(data, self.f, indent=2)
         except FileExistsError:
             self.f = open(self.fn, 'r')
-            data = json.load(self.f)
+            # data = json.load(self.f)
+            try:
+                data = json.load(self.f)
+            except json.decoder.JSONDecodeError: #if file is empty, default skeleton is used.
+                print('here')
+                data = {"lastUID":0, "iterations":[]}
         self.fs = data
         self.f = open(self.fn, 'w')
 
     def jsonoutput(self,params):
+        ##prepend the passed params to params.json iterations list and increments lastUID.
         UID = self.fs["lastUID"]+1
         self.fs["lastUID"] = UID
         data = {"UID":UID,"params":params}
         self.fs["iterations"].insert(0,data)
         json.dump(self.fs,self.f,indent=2)
 
-    def jsondump(self):
-        json.dump(self.fs,self.f,indent=2)
-
     def jsonoutputgrid(self,params):
-        ## Build grid layout
+        ##Builds grid of all possible variable combinations.
+        # Build grid layout
         ranges = []
         i=0
         for item in params:
             key = params[item]
             ranges.append(numpy.linspace(key[1],key[2],2)) #linspace num (3rd arg) can be increased.
             i=i+1
-        print(ranges)
-        params = list(itertools.product(*ranges)) #https://stackoverflow.com/questions/798854/all-combinations-of-a-list-of-lists
-        print(list(params))
-        print(len(params))
-        ## Write grid layout to file
+        params = list(itertools.product(*ranges)) #The itertools.product() tool computes the cartesian product of input iterables. It is equivalent to nested for-loops. https://stackoverflow.com/questions/798854/all-combinations-of-a-list-of-lists
+
+        # Write grid layout to file
         i=0
         for l in params:
+            data={ #We can get rid of the dictionary and just print list of values to simplify json file, if desired.
+                'Vco':l[0],
+                'Ftot':l[1],
+                'conversion':l[2],
+                'tspan':l[3],
+                'mH': l[4],
+                'MWH':l[5],
+                'delta':l[6],
+                'Vr': l[7],
+                'tau':l[8],
+                'n':l[9],
+                'x':l[10]
+                }
             UID = self.fs["lastUID"]+1
             self.fs["lastUID"] = UID
-            data = {"UID":UID,"params":l}
-            self.fs["iterations"].insert(0,data)
+            dataFormatted = {"UID":UID,"params": data}
+            self.fs["iterations"].insert(0,dataFormatted)
             i=i+1
-        self.jsondump()
+        json.dump(self.fs,self.f,indent=2)
 
-def randparams(params):
-    for item in params:
-        key = params[item]
-        key[0] = random.uniform(key[1],key[2])
-    return (params)
-
-def randparamsgrid(params, j):
-    for item in params:
-        key = params[item]
-        gridVals = numpy.linspace(key[1],key[2],2)
-        for val in gridVals:
-            key[0] = val
-            j.jsonoutputgrid(params)
-    j.jsondump()
-    return (params)
+    def randparams(self, params):
+        ##randomizes the values of params in the range provided internal to the dicitionary.
+        for item in params:
+            key = params[item]
+            key[0] = random.uniform(key[1],key[2])
+        return (params)
 
 def main():
     params = {
@@ -85,14 +91,13 @@ def main():
     }
 
     j = jsonComm()
-    try:
+    try: #checks if gridoutput is desired (called "initialization" here as it provides a basis for successive iteration).
         input = sys.argv[1]
         if(input=='-i' or input=='--init'):
             params = j.jsonoutputgrid(params)
     except IndexError:
-        params = randparams(params)
+        params = j.randparams(params)
         j.jsonoutput(params)
-
 
 if __name__ == "__main__":
     main()
