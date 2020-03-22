@@ -8,6 +8,7 @@ def parsejson(fn):
         for i in data['iterations']:
             #each i will be a different set of parameters
             params = i['params']
+            print(params)
             execODE(params)
 
 
