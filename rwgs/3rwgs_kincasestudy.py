@@ -53,20 +53,27 @@ def reaction(V, y, C):
     K3 = 0.00000101 #equilibrium constant for H2O dissociation
     K = p[2]*p[3]/p[0]/p[1]
     X = (P0CO2 - p[0])/P0CO2
-    #capping conversion at 1.0
     if X >= 1:
         X = 1
+
     # print('V: ' + str(V))
     # print('K: ' + str(K))
     # print('X: ' + str(X))
 
-    #calculating eta = parameter to fix erroneous rate
+    #calculating F = parameter to fix erroneous rate
     mCat = 3950*Vtot #cat. loading = Al2O3 density multiplied by vol of 1 tube
     W = mCat/nDict['CO2']
+    # F = (1.506*10**-10)*W**2 + (6.134*10**-9)*W + 1.087*10**-7
     eta = 2464.5*W**2 - 244020*W + 7439600
+
     #rate [=] mol gCat**-1  hr**-1
+    # r = k1L0*P0CO2*(P0H2*((1-X)**2)/F - F*P0CO2*(X**2)/(K))
+    # r = k1L0*P0CO2*(P0H2*((1-X)**2))/F
     r = k1L0*P0CO2*(P0H2*((1-X)**2))*eta
+
     r = r/(P0H2*(1-X) + (K2**0.5)*P0H2*1.5*(((1-X)**1.5)) + P0CO2*X/K2/K3)
+    # print('Term1, 1-X: ' + str(P0H2*((1-X)**2)/F) + '   ' + str(1-X))
+    # print('Term2: ' + str(F*P0CO2*(X**2)/(K)))
     # print('rate, V: ' + str(r) + '   ' + str(V))
 
     # dn/dV = dn/dt/Vdot = dn/dt/ndot/R/T*Ptot = nu*r*gCat*Ptot/(ndot*R*T)
@@ -128,18 +135,16 @@ def main():
     Ptot = 44*1.01325 # feed pressure. units converted from bar to atm
     mu = 3.6*0.01849/3600 #3.6 = unit conversion. Value from HYSYS. [=] kg m**-1 s**-1
     #reactor dimensions
-    D = 0.0254 #tube diameter. determined from Aboudheir et al. [=] m
-    D = 0.05
-    # D = 0.1
+    D = 0.05 #tube diameter. determined from Aboudheir et al. [=] m
     L = 1 #tube length. [=] m
-    Vtot = 1000*L*math.pi*(D**2)/4 #total volume of 1 tube. units converted to L
+    Vtot = 1000*L*math.pi*(D**2)/4 #total volume of 1 tube. [=] L
     #molecular weight dictionary for all species
     MWDict = {'CO2': 44.008, 'H2': 1.008, 'CO': 28.008, 'H2O': 18.016}
     MW = list(MWDict.values()) #create list instead of dictionary for calculations
 
     #feed molar flowrates of each species. [=] mol/hr
     ratio = 6
-    nDict = {'CO2': 360.7, 'H2': 1, 'CO': 0.0001, 'H2O': 0.0001}
+    nDict = {'CO2': 2769.9, 'H2': 1, 'CO': 0.0001, 'H2O': 0.0001}
     nDict['H2'] = ratio*nDict['CO2'] - nDict['CO'] - nDict['H2O']
     n = list(nDict.values())
     ntot = 0 #total molar flowrate
@@ -152,7 +157,8 @@ def main():
     pDict = {'CO2': Ptot*yDict['CO2'],
             'H2': Ptot*yDict['H2'],
             'CO': Ptot*yDict['CO'],
-            'H2O': Ptot*yDict['H2O']}
+            'H2O': Ptot*yDict['H2O']
+            }
     #extract initial CO2 and H2 pressures (needed for rate calculations).
     P0CO2 = pDict['CO2']
     P0H2 = pDict['H2']
@@ -185,17 +191,17 @@ def main():
     XCO2 = (nDict['CO2'] - sol.y[0][-1])/nDict['CO2']
     print('XCO2: ' + str(XCO2))
 
-    print('mflowTot: ' + str(mflowTot))
-    Re = Reynolds(p, T, R, n, MW, mu, D)
-    print('Re: ' + str(Re))
-
-    print('COfinal: ' + str(sol.y[2][-1]))
-    Ntubes = tubes(sol, MWDict)
-    print('Ntubes: ' + str(Ntubes))
-
-    #total heat
-    heat = Hrxn*sol.y[2][-1]*1000/3600 #[=] Watts
-    print('Watts: ' + str(heat))
+    # print('mflowTot: ' + str(mflowTot))
+    # Re = Reynolds(p, T, R, n, MW, mu, D)
+    # print('Re: ' + str(Re))
+    #
+    # print('COfinal: ' + str(sol.y[2][-1]))
+    # Ntubes = tubes(sol, MWDict)
+    # print('Ntubes: ' + str(Ntubes))
+    #
+    # #total heat
+    # heat = Hrxn*sol.y[2][-1]*1000/3600 #[=] Watts
+    # print('Watts: ' + str(heat))
 
     plotdata(V, sol)
 
