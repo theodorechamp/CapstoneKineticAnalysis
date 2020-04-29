@@ -165,31 +165,30 @@ def main():
     Len = np.linspace(0, L, 101)
     plotdata(Len, sol)
 
-    print('Pfinal: ' + str(Pfinal))
-    print('deltaP: ' + str(Pfinal - Ptot))
-
+    #catalyst loading
     W = 3950*(1-phi)*Vtot
+    #feed rate of co2
     FCO2 = nDict['CO2']
+    #variable used in gines et al
     WoFCO2 = W/FCO2
-    # print('W/FCO2: ' + str(WoFCO2))
-
     #final conversion
     XCO2 = (nDict['CO2'] - sol.y[0][-1])/nDict['CO2']
-    print('XCO2: ' + str(XCO2))
-
-    # print('mflowTot: ' + str(mflowTot))
+    #reynolds number
     Re = Reynolds(p, T, R, n, MW, mu, D)
-    print('Re: ' + str(Re))
-
+    #exit flowrate of CO
     COfinal = sol.y[2][-1]
+    #estimate of the numer of tubes needed to meet spec
     Ntubes = tubes(sol, MWDict)
-    print('Ntubes: ' + str(Ntubes))
-
-    #total heat
+    #total heat needed per tube
     heat = Hrxn*sol.y[2][-1]*1000/3600 #[=] Watts
 
+    # print('W/FCO2: ' + str(WoFCO2))
+    print('Ntubes: ' + str(Ntubes))
+    print('deltaP: ' + str(Pfinal - Ptot))
+    print('XCO2: ' + str(XCO2))
+    print('Re: ' + str(Re))
+
     # Z = [WoFCO2, W, FCO2, XCO2, Ntubes, heat, Pfinal, Re, COfinal]
-    # # print(Z)
     # return(Z)
 
 if __name__ == '__main__':
