@@ -62,8 +62,7 @@ def reaction(V, y, C):
     #calculating eta = parameter to fix erroneous rate
     mCat = 3950*(1-phi)*Vtot #cat. loading = Al2O3 density multiplied by vol of 1 tube
     WoF = mCat/nDict['CO2']
-    eta = (2464.5/((1-phi)**2))*WoF**2 - 244020/(1-phi)*WoF + 7439600
-    # eta = 7.0*10**8
+    eta = 2060.3*WoF**2 - 187440*WoF + 5338200
 
     #rate [=] mol gCat**-1  hr**-1
     r = k1L0*P0CO2*(P0H2*((1-X)**2))*eta
@@ -114,16 +113,15 @@ def plotdata(V, sol):
     CO = y[2]
     H2O = y[3]
     plt.figure(1)
-    plt.plot(V, CO2, 'r', label = 'CO2')
-    plt.plot( V, H2, 'g', label = 'H2')
-    plt.plot( V, CO, 'm', label = 'CO')
-    plt.plot( V, H2O, 'b', label = 'H2O')
+    plt.plot(V, CO2, 'r-', label = 'CO2')
+    plt.plot( V, H2, 'g:', label = 'H2')
+    plt.plot( V, H2O, 'b', label = 'H2O & CO')
     plt.xlabel('Volume (L)')
     plt.ylabel('Flowrate (mol/hr)')
     plt.legend()
     plt.savefig('results.png')
 
-def main():
+def main(L):
     #constant parameters
     R = 0.08205 #gas constant. [=] L atm K**-1 mol**-1
     T = 523 #isothermal temperature. [=] K
@@ -133,15 +131,15 @@ def main():
     phi = 0.3 #void fraction
     #reactor dimensions
     D = 0.0254 #tube diameter. determined from Aboudheir et al. [=] m
-    L = 3 #tube length. [=] m
+    # L = 3 #tube length. [=] m
     Vtot = 1000*L*math.pi*(D**2)/4 #total volume of 1 tube. units converted to L
     #molecular weight dictionary for all species
     MWDict = {'CO2': 44.008, 'H2': 1.008, 'CO': 28.008, 'H2O': 18.016}
     MW = list(MWDict.values()) #create list instead of dictionary for calculations
 
     #feed molar flowrates of each species. [=] mol/hr
-    ratio = 6
-    nDict = {'CO2': FCO2, 'H2': 1, 'CO': 0.001, 'H2O': 0.001}
+    ratio = 3
+    nDict = {'CO2': 250, 'H2': 1, 'CO': 0.001, 'H2O': 0.001}
     nDict['H2'] = ratio*nDict['CO2'] - nDict['CO'] - nDict['H2O']
     # nflow = 58210000/17939
     # nDict = {'CO2': 0.7*0.4080*nflow, 'H2': 0.5852*nflow, 'CO': 0.0019*nflow, 'H2O': 0.0049*nflow}
@@ -179,33 +177,38 @@ def main():
     Pfinal = Ptot
     for i in range(len(V) - 1):
         Pfinal = Pfinal + dP[i]
-    print('Pfinal: ' + str(Pfinal))
+    deltaP = Pfinal - Ptot
+    # print('Pfinal: ' + str(Pfinal))
 
     W = 3950*(1-phi)*Vtot
     FCO2 = nDict['CO2']
     WoFCO2 = W/FCO2
-    print('W/FCO2: ' + str(WoFCO2))
+    # print('W/FCO2: ' + str(WoFCO2))
 
     #final conversion
     XCO2 = (nDict['CO2'] - sol.y[0][-1])/nDict['CO2']
-    print('XCO2: ' + str(XCO2))
+    # print('XCO2: ' + str(XCO2))
 
     # print('mflowTot: ' + str(mflowTot))
     Re = Reynolds(p, T, R, n, MW, mu, D)
-    print('Re: ' + str(Re))
+    # print('Re: ' + str(Re))
     #
     COfinal = sol.y[2][-1]
-    print('COfinal: ' + str(sol.y[2][-1]))
+    # print('COfinal: ' + str(sol.y[2][-1]))
     # print('H2final: ' + str(sol.y[1][-1]))
     # print('syngas ratio: ' + str(sol.y[1][-1]/sol.y[2][-1]))
     Ntubes = tubes(sol, MWDict)
-    print('Ntubes: ' + str(Ntubes))
+    # print('Ntubes: ' + str(Ntubes))
 
     #total heat
     heat = Hrxn*sol.y[2][-1]*1000/3600 #[=] Watts
-    print('Watts: ' + str(heat))
+    # print('Watts: ' + str(heat))
 
     # plotdata(V, sol)
 
-if __name__ == '__main__':
-    main()
+    Z = [WoFCO2, W, L, XCO2, Ntubes, heat, deltaP, Re, COfinal]
+    # print(Z)
+    return(Z)
+
+# if __name__ == '__main__':
+#     main()
